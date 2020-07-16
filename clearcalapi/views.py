@@ -12,7 +12,7 @@ from .serializers import *
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    authentication_classes = (AllowAny)
+    permission_classes = (AllowAny, )
 
     def update(self, request, *args, **kwargs):
         response = {'message': 'You cant update an event with this route'}
@@ -24,7 +24,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.obects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )

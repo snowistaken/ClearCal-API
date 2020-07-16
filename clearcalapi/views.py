@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
-from .models import *
+from .models import Event
 from .serializers import *
 
 
@@ -45,8 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 event.end = request.data.event['end']
                 event.save()
 
-                # check tutorial and see what is needed for the argument here
-                serializer = EventSerializer( , many=False)
+                serializer = EventSerializer( event, many=False)
                 response = {'message': 'Event updated successfully', 'result': serializer.data}
                 return Response(response, status=status.HTTP_200_OK)
             except:
@@ -59,7 +58,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     organizer = user
                 )
 
-                serializer = EventSerializer( , many=False)
+                serializer = EventSerializer( event, many=False)
                 response = {'message': 'Event created successfully', 'result': serializer.data}
                 return Response(response, status=status.HTTP_200_OK)
 

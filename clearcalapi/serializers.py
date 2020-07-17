@@ -3,6 +3,7 @@ from .models import *
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -18,5 +19,17 @@ class UserSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ('id', 'title', 'description', 'all_day', 'start', 'end')
+        fields = ('id', 'title', 'description', 'all_day', 'start', 'end', 'organizer', 'shifts')
+
+
+class UserSubClassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSubClass
+        fields = ('type', 'user')
+
+
+class ShiftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shift
+        fields = ('id', 'start', 'end', 'event', 'volunteer')
 

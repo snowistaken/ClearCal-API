@@ -5,22 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
-from .models import Event
+from .models import Event, Shift, UserSubClass
 from .serializers import *
-
-
-class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
-    permission_classes = (AllowAny, )
-
-    def update(self, request, *args, **kwargs):
-        response = {'message': 'You cant update an event with this route'}
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-    def create(self, request, *args, **kwargs):
-        response = {'message': 'You cant create an event with this route'}
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -50,18 +36,44 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(response, status=status.HTTP_200_OK)
             except:
                 event = Event.objects.create(
-                    title = title,
-                    description = request.data.event['description'],
-                    all_day = request.data.event['all_day'],
-                    start = request.data.event['start'],
-                    end = request.data.event['end'],
-                    organizer = user
+                    title=title,
+                    description=request.data.event['description'],
+                    all_day=request.data.event['all_day'],
+                    start=request.data.event['start'],
+                    end=request.data.event['end'],
+                    organizer=user
                 )
 
-                serializer = EventSerializer( event, many=False)
+                serializer = EventSerializer(event, many=False)
                 response = {'message': 'Event created successfully', 'result': serializer.data}
                 return Response(response, status=status.HTTP_200_OK)
 
         else:
             response = {'message': 'Event must be provided'}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = (AllowAny, )
+
+    def update(self, request, *args, **kwargs):
+        response = {'message': 'You cant update an event with this route'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request, *args, **kwargs):
+        response = {'message': 'You cant create an event with this route'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSubClassViewSet(viewsets.ModelViewSet):
+    queryset = UserSubClass.objects.all()
+    serializer_class = UserSubClassSerializer
+    permission_classes = (AllowAny, )
+
+
+class ShiftViewSet(viewsets.ModelViewSet):
+    queryset = Shift.objects.all()
+    serializer_class = ShiftSerializer
+    permission_classes = (AllowAny, )

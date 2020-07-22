@@ -22,10 +22,10 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'description', 'all_day', 'start', 'end', 'organizer', 'shifts')
 
 
-class UserSubClassSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserSubClass
-        fields = ('type', 'user')
+# class UserSubClassSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserSubClass
+#         fields = ('type', 'user')
 
 
 class ShiftSerializer(serializers.ModelSerializer):

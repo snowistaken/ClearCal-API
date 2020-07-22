@@ -8,8 +8,8 @@ class Event(models.Model):
     title = models.CharField(max_length=32)
     description = models.TextField(max_length=360)
     all_day = models.BooleanField(default=False)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.CharField(max_length=32)
+    end = models.CharField(max_length=32)
 
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
 

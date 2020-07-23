@@ -8,7 +8,15 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
 from .models import Event, Shift, UserSubClass
+from rest_framework.authtoken.views import ObtainAuthToken
 from .serializers import *
+
+
+class CustomObtainAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        response = super(CustomObtainAuthToken, self).post(request, *args, **kwargs)
+        token = Token.objects.get(key=response.data['token'])
+        return Response({'token': token.key, 'id': token.user_id})
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -80,10 +88,12 @@ class EventViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
 
         try:
+            last_char = len(request.headers['Authorization'])
+            user = Token.objects.get(key=request.headers['Authorization'][6:last_char]).user
             if not request.headers['Authorization']:
                 response = {'message': 'You must be logged in to perform this action'}
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            elif request.user.id != request.data['organizer']:
+            elif str(user.id) != request.data['organizer']:
                 response = {'message': 'Event does not belong to user'}
                 return Response(response, status=status.HTTP_401_UNAUTHORIZED)
         except KeyError:
@@ -106,10 +116,11 @@ class EventViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
 
         try:
+            user = Token.objects.get(key=request.headers['Authorization']).user
             if not request.headers['Authorization']:
                 response = {'message': 'You must be logged in to perform this action'}
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            elif request.user.id != request.data['organizer']:
+            elif user.id != request.data['organizer']:
                 response = {'message': 'Event does not belong to this user'}
                 return Response(response, status=status.HTTP_401_UNAUTHORIZED)
         except KeyError:

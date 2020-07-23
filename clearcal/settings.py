@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from decouple import config
+from dj_database_url import parse as dburl
 
 import environ
 env = environ.Env(
@@ -21,10 +23,10 @@ env = environ.Env(
 environ.Env.read_env()
 
 # False if not in os.environ
-DEBUG = env('DEBUG')
+DEBUG = config('DEBUG')
 
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY')
 
 # Parse database connection url strings like psql://user:pass@127.0.0.1:8458/db
 # DATABASES = {
@@ -36,11 +38,10 @@ SECRET_KEY = env('SECRET_KEY')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+default_dburl = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': config('DATABASE_URL', default_dburl, cast=dburl)
 }
 
 CACHES = {
@@ -146,3 +147,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

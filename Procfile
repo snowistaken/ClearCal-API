@@ -1,0 +1,1 @@
+web: gunicorn clearcal.wsgi --log-file -

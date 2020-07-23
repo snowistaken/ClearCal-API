@@ -17,6 +17,10 @@ class UserViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
 
+    def list(self, request, *args, **kwargs):
+        response = {'message': 'This request is not permitted'}
+        return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     @action(detail=True, methods=['GET'])
     def get_events(self, request, pk=None):
         user = request.user
@@ -24,7 +28,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if len(events) > 0:
             serializer = EventSerializer(events, many=True)
-            response = {'message': 'events acquired successfully', 'result': serializer.data}
+            response = {'message': 'Events acquired successfully', 'result': serializer.data}
             return Response(response, status=status.HTTP_200_OK)
         else:
             response = {'message': 'There are no events for this user', 'result': []}

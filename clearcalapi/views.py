@@ -122,7 +122,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 response = {'message': 'You must be logged in to perform this action'}
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             elif str(user.id) != request.data['organizer']:
-                response = {'message': 'Event does not belong to this user'}
+                response = {'message': 'Event does not belong to user'}
                 return Response(response, status=status.HTTP_401_UNAUTHORIZED)
         except KeyError:
             response = {'message': 'Authorization must be provided for this request'}

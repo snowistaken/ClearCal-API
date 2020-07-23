@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
+from rest_framework.settings import api_settings
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.contrib.auth.decorators import login_required
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
@@ -14,6 +16,19 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
+
+    @action(detail=True, methods=['GET'])
+    def get_events(self, request, pk=None):
+        user = request.user
+        events = Event.objects.filter(organizer=user.id)
+
+        if len(events) > 0:
+            serializer = EventSerializer(events, many=True)
+            response = {'message': 'events acquired successfully', 'result': serializer.data}
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            response = {'message': 'There are no events for this user', 'result': []}
+            return Response(response, status=status.HTTP_200_OK)
 
     # @action(detail=True, methods=['POST'])
     # def create_event(self, request, pk=None):
@@ -59,7 +74,18 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny, )
 
     def update(self, request, *args, **kwargs):
-        print(request.data)
+
+        try:
+            if not request.headers['Authorization']:
+                response = {'message': 'You must be logged in to perform this action'}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            elif request.user.id != request.data['organizer']:
+                response = {'message': 'Event does not belong to user'}
+                return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+        except KeyError:
+            response = {'message': 'Authorization must be provided for this request'}
+            return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -72,6 +98,51 @@ class EventViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+
+        try:
+            if not request.headers['Authorization']:
+                response = {'message': 'You must be logged in to perform this action'}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            elif request.user.id != request.data['organizer']:
+                response = {'message': 'Event does not belong to this user'}
+                return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+        except KeyError:
+            response = {'message': 'Authorization must be provided for this request'}
+            return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+    def create(self, request, *args, **kwargs):
+        if not request.headers['Authorization']:
+            response = {'message': 'You must be logged in to perform this action'}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def get_success_headers(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
+
+
+
+
 
     # def update(self, request, *args, **kwargs):
     #     response = {'message': 'You cant update an event with this route'}

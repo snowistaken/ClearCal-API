@@ -116,11 +116,12 @@ class EventViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
 
         try:
-            user = Token.objects.get(key=request.headers['Authorization']).user
+            last_char = len(request.headers['Authorization'])
+            user = Token.objects.get(key=request.headers['Authorization'][6:last_char]).user
             if not request.headers['Authorization']:
                 response = {'message': 'You must be logged in to perform this action'}
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            elif user.id != request.data['organizer']:
+            elif str(user.id) != request.data['organizer']:
                 response = {'message': 'Event does not belong to this user'}
                 return Response(response, status=status.HTTP_401_UNAUTHORIZED)
         except KeyError:
